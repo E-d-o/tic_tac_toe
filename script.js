@@ -1,5 +1,6 @@
 
 
+
 const prova = document.querySelector("#prova")
 
 prova.textContent = "PROVA script"
@@ -10,7 +11,9 @@ const gameboard = (function createGameboard() {
         [[" ", " ", " "],
         [" ", " ", " "],
         [" ", " ", " "]]
-    const DEBUG = true
+    let freeSpaces = 9
+    let isFull = false
+
     const getFreeSpaces = function () {
         let row_count = 0
         let col_count = 0
@@ -19,50 +22,96 @@ const gameboard = (function createGameboard() {
             arr.forEach(space => {
                 if (space == " ") {
                     free_arr.push({ "row": row_count, "col": col_count })
-                    col_count += 1
+
                 }
+                col_count += 1
 
             })
             col_count = 0
             row_count += 1
 
         });
+        if (free_arr.length == 0) {
+            isFull = true
+        }
         return free_arr
 
     }
     const displayMove = function (move, symbol) {
         const { row, col } = move
-        console.log(move)
-        console.log(row)
-        console.log(col)
+
         gameboard[row][col] = symbol
-        if (DEBUG) {
-            console.log(gameboard.toString())
+        freeSpaces -= 1
+        if (freeSpaces <= 0) {
+            isFull = true
         }
+
     }
 
     const checkMoveValidity = function (move) {
         const free_arr = getFreeSpaces()
-        console.log(typeof (move))
-        free_arr.array.forEach(element => {
-            if (move == element) {
-                return true
-            }
+
+        function isSameMove(move1, move2) {
+            return move1.row === move2.row && move1.col === move2.col
+        }
+        return free_arr.some(space => {
+            return isSameMove(space, move)
         });
-        return false
+
 
     }
 
     const checkFull = function () {
-        const free_arr = getFreeSpaces()
-        if (free_arr.length <= 0) {
-            return true
+        return isFull
+    }
+
+    const getLines = function () {
+        lines = []
+        gameboard.forEach(row => lines.push(row))
+
+
+        for (let c = 0; c < gameboard[0].length; c += 1) {
+
+            col = []
+            for (let r = 0; r < gameboard.length; r += 1) {//assume no row has more columns than the others
+                col.push(gameboard[r][c])
+
+
+            }
+            lines.push(col)
+
         }
-        return false
+
+        //diag
+        const diag1 = []
+        for (let r = 0; r < gameboard.length; r += 1) {
+
+            let c = r
+            diag1.push(gameboard[r][c])
+
+        }
+        lines.push(diag1)
+        const diag2 = []
+        for (let r = gameboard.length - 1; r >= 0; r -= 1) {
+
+            let c = Math.abs(r - (gameboard.length - 1))
+            diag2.push(gameboard[r][c])
+        }
+
+        lines.push(diag2)
+
+        return lines
+    }
+
+    const toString = function () {
+        return gameboard.toString()
     }
 
 
-    return { gameboard, getFreeSpaces, displayMove }
+    return {
+        toString, getFreeSpaces, displayMove,
+        checkFull, getLines, checkMoveValidity
+    }
 })()
 
 function createPlayer(name) {
@@ -97,7 +146,11 @@ const game =
         let active_player = p1
         let active_player_symbol = "o"
         let winner = "none"
+        let isWon = false
 
+        const displayChangeMessage = function () {
+            console.log(`E il turno di ${active_player.name} con simbolo ${active_player_symbol}`)
+        }
         const changeActivePlayer = () => {
             if (active_player === p1) {
                 active_player = p2
@@ -106,44 +159,82 @@ const game =
                 active_player = p1
                 active_player_symbol = "o"
             }
+
+            displayChangeMessage()
+
         }
 
 
-        const playMove = () => {
+
+
+        const playMove = (played_move) => {
 
             // const played_move = active_player.decide_move(gameboard)
-            gameboard.checkMoveValidity()
+            const isValidMove = gameboard.checkMoveValidity(played_move)
+
             //se apposto
+            if (!isValidMove) {
+                console.log("Mossa non valida, riprova")
+                return
+            }
             gameboard.displayMove(played_move, active_player_symbol)
-            //se non ended
-            changeActivePlayer()
-            console.log(`E il turno di ${active_player.name} con simbolo ${active_player_symbol}`)
+            console.log(`gameboard dopo mossa: ${gameboard.toString()}`)
+            const isGameDone = checkGameEnding()
+            if (!isGameDone) {
+                changeActivePlayer()
+
+
+            } else {
+                console.log("Gioco finito")
+            }
+
         }
 
-        const checkWin = function () {
+        const checkWin = function (symbol) {
+            const lines = gameboard.getLines()
+            return lines.some(winningLine => {
+                const isAllSymbol = winningLine.every(el => el === symbol)
+                if (isAllSymbol) {
+                    console.log("E' vinta, con linea:")
+                    console.log(winningLine)
+
+
+                } else {
+                    console.log(`la linea ${winningLine} non va bene per la vincita,continuo..`)
+                }
+                return isAllSymbol
+
+            })
 
         }
 
 
         const checkGameEnding = function () {
             const isFull = gameboard.checkFull()
-            const isWon = checkWin()
+            const hasWon = checkWin(active_player_symbol)
+            let isGameDone = false
 
-            if (isWon) {
+            if (hasWon) {
+                isWon = true
+                winner = active_player
                 console.log(`Winner ${winner}`)
-            }
-            if (isFull && !isWon) {
+                isGameDone = true
+
+
+            } else if (isFull) {
                 console.log("Parita")
+                isGameDone = true
             }
+            return isGameDone
 
         }
 
 
         console.log("Gioco creato")
-        console.log(`E il turno di ${active_player.name}`)
+        displayChangeMessage()
 
 
-        return { playMove }
+        return { playMove, checkGameEnding }
 
     })(gameboard, player_1, player_2)
 
