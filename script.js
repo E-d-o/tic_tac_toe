@@ -7,12 +7,31 @@ prova.textContent = "PROVA script"
 
 
 const gameboard = (function createGameboard() {
-    const gameboard =
+    let gameboard =
         [[" ", " ", " "],
         [" ", " ", " "],
         [" ", " ", " "]]
     let freeSpaces = 9
     let isFull = false
+    let listeners = []
+
+    const onChange = function (cb) {
+        listeners.push(cb)
+    }
+
+    const notify = function () {
+        listeners.forEach((listenerCb) => listenerCb())
+    }
+
+    const resetBoard = function () {
+        gameboard =
+            [[" ", " ", " "],
+            [" ", " ", " "],
+            [" ", " ", " "]]
+        freeSpaces = 9
+        isFull = false
+        notify()
+    }
 
     const getFreeSpaces = function () {
         let row_count = 0
@@ -45,7 +64,12 @@ const gameboard = (function createGameboard() {
         if (freeSpaces <= 0) {
             isFull = true
         }
+        notify()
 
+    }
+
+    const getBoard = function () {
+        return gameboard.slice()
     }
 
     const checkMoveValidity = function (move) {
@@ -110,7 +134,7 @@ const gameboard = (function createGameboard() {
 
     return {
         toString, getFreeSpaces, displayMove,
-        checkFull, getLines, checkMoveValidity
+        checkFull, getLines, checkMoveValidity, getBoard, onChange, resetBoard
     }
 })()
 
@@ -148,6 +172,21 @@ const game =
         let winner = "none"
         let isWon = false
 
+
+
+
+        const resetGame = function () {
+            gameboard.resetBoard()
+            active_player = p1
+            active_player_symbol = "o"
+            winner = "none"
+            isWon = false
+            displayCreateMessage()
+        }
+        const displayCreateMessage = function () {
+            console.log("Gioco creato")
+            displayChangeMessage()
+        }
         const displayChangeMessage = function () {
             console.log(`E il turno di ${active_player.name} con simbolo ${active_player_symbol}`)
         }
@@ -166,10 +205,18 @@ const game =
 
 
 
-
+        const displayEndingMessage = function () {
+            console.log("Gioco finito")
+            console.log("Restart per riprovare")
+        }
         const playMove = (played_move) => {
 
-            // const played_move = active_player.decide_move(gameboard)
+            if (isWon) {
+
+                displayEndingMessage()
+                return
+
+            }
             const isValidMove = gameboard.checkMoveValidity(played_move)
 
             //se apposto
@@ -185,7 +232,8 @@ const game =
 
 
             } else {
-                console.log("Gioco finito")
+                displayEndingMessage()
+
             }
 
         }
@@ -230,11 +278,10 @@ const game =
         }
 
 
-        console.log("Gioco creato")
-        displayChangeMessage()
+        displayCreateMessage()
 
 
-        return { playMove, checkGameEnding }
+        return { playMove, resetGame }
 
     })(gameboard, player_1, player_2)
 
@@ -242,7 +289,7 @@ const game =
 
 const renderer = (function createRenderer(gameboard, game) {
     let cells = document.querySelectorAll(".game>div")
-
+    let restartButton = document.querySelector(".restart")
     const getMoveFromClass = function (cell) {
         const classes = cell.classList
         console.log(classes)
@@ -268,18 +315,30 @@ const renderer = (function createRenderer(gameboard, game) {
         console.log(`Mossa e ${row} ${col}`)
         return { "row": row, "col": col }
     }
-    const updateCellsFromData = function () {
-        const lines = gameboard.getLines()
+
+    gameboard.onChange(() => {
+        const board = gameboard.getBoard()
+        board.forEach((row, index) => {
+            for (let i = 0; i < row.length; i += 1) {
+                cells[index * row.length + i].textContent = row[i]
+            }
+
+        })
+    })
 
 
-    }
+
 
     cells.forEach((cell) => cell.addEventListener("click", (event) => {
         const playedMove = getMoveFromClass(cell)
         game.playMove(playedMove)
-        updateCellsFromData()
+
 
     }))
+
+    restartButton.addEventListener("click", (event) => {
+        game.resetGame()
+    })
 
 
 })(gameboard, game)
