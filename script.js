@@ -238,3 +238,48 @@ const game =
 
     })(gameboard, player_1, player_2)
 
+
+
+const renderer = (function createRenderer(gameboard, game) {
+    let cells = document.querySelectorAll(".game>div")
+
+    const getMoveFromClass = function (cell) {
+        const classes = cell.classList
+        console.log(classes)
+        let row = 0
+        let col = 0
+        const row_class = classes[0]
+        const col_class = classes[1]
+        if (row_class === "top") {
+            row = 0
+        } else if (row_class === "mid") {
+            row = 1
+        } else if (row_class === "bottom") {
+            row = 2
+        }
+
+        if (col_class === "left") {
+            col = 0
+        } else if (col_class === "middle") {
+            col = 1
+        } else if (col_class === "right") {
+            col = 2
+        }
+        console.log(`Mossa e ${row} ${col}`)
+        return { "row": row, "col": col }
+    }
+    const updateCellsFromData = function () {
+        const lines = gameboard.getLines()
+
+
+    }
+
+    cells.forEach((cell) => cell.addEventListener("click", (event) => {
+        const playedMove = getMoveFromClass(cell)
+        game.playMove(playedMove)
+        updateCellsFromData()
+
+    }))
+
+
+})(gameboard, game)

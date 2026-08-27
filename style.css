@@ -2,3 +2,47 @@
     color: red;
     text-decoration: overline;
 }
+
+* {
+    box-sizing: border-box;
+}
+
+body {
+    display: flex;
+    justify-content: center;
+    flex-direction: column;
+    align-items: center;
+    padding: 0;
+}
+
+.game {
+    --border-color-game: black;
+    --border-size-game: 10px;
+    --border-property: var(--border-size-game) solid var(--border-color-game);
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+
+    width: clamp(220px, 80vw, 600px);
+    aspect-ratio: 1/1;
+
+}
+
+.game>div {
+
+    aspect-ratio: 1/1;
+    box-sizing: content-box;
+    background-color: red;
+}
+
+.left {
+    border-right: var(--border-property);
+}
+
+.right {
+    border-left: var(--border-property);
+}
+
+.mid {
+    border-top: var(--border-property);
+    border-bottom: var(--border-property);
+}
