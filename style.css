@@ -1,3 +1,12 @@
+@font-face {
+    font-family: 'CaskaydiaMono NFM';
+    src: url('fonts/CaskaydiaMonoNFM-Regular.woff2') format('woff2'),
+        url('fonts/CaskaydiaMonoNFM-Regular.woff') format('woff');
+    font-weight: normal;
+    font-style: normal;
+    font-display: swap;
+}
+
 #prova {
     color: red;
     text-decoration: overline;
@@ -5,14 +14,18 @@
 
 * {
     box-sizing: border-box;
+
 }
 
 body {
     display: flex;
     justify-content: center;
     flex-direction: column;
+    gap: 2rem;
     align-items: center;
     padding: 0;
+    font-family: "CaskaydiaMono NFM";
+
 }
 
 .game {
@@ -21,6 +34,7 @@ body {
     --border-property: var(--border-size-game) solid var(--border-color-game);
     display: grid;
     grid-template-columns: repeat(3, 1fr);
+    container-type: inline-size;
 
     width: clamp(220px, 80vw, 600px);
     aspect-ratio: 1/1;
@@ -28,10 +42,14 @@ body {
 }
 
 .game>div {
-
+    padding: 1rem;
     aspect-ratio: 1/1;
     box-sizing: content-box;
-    background-color: red;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 15cqi;
 }
 
 .left {

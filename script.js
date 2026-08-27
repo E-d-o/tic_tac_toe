@@ -167,8 +167,9 @@ player_2 = createTicTacToePlayer("andy")
 const game =
     (function createGame(gameboard, p1, p2) {
 
+        const symbols = ["󰄛", ""]
         let active_player = p1
-        let active_player_symbol = "o"
+        let active_player_symbol = symbols[0]
         let winner = "none"
         let isWon = false
 
@@ -178,7 +179,7 @@ const game =
         const resetGame = function () {
             gameboard.resetBoard()
             active_player = p1
-            active_player_symbol = "o"
+            active_player_symbol = symbols[0]
             winner = "none"
             isWon = false
             displayCreateMessage()
@@ -193,10 +194,10 @@ const game =
         const changeActivePlayer = () => {
             if (active_player === p1) {
                 active_player = p2
-                active_player_symbol = "x"
+                active_player_symbol = symbols[1]
             } else {
                 active_player = p1
-                active_player_symbol = "o"
+                active_player_symbol = symbols[0]
             }
 
             displayChangeMessage()
