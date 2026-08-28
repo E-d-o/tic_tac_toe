@@ -19,11 +19,14 @@
 
 body {
     display: flex;
-    justify-content: center;
+    justify-content: space-around;
+    height: 100vh;
+    margin: 0;
+
     flex-direction: column;
-    gap: 2rem;
+
     align-items: center;
-    padding: 0;
+    padding: 1rem;
     font-family: "CaskaydiaMono NFM";
 
 }
@@ -64,4 +67,19 @@ body {
 .mid {
     border-top: var(--border-property);
     border-bottom: var(--border-property);
+}
+
+.text-transparent {
+    color: lightslategray;
+
+}
+
+.restart {
+    font-family: "CaskaydiaMono NFM";
+    border-radius: 8px;
+    padding: 0.55rem
+}
+
+.restart:hover {
+    background-color: lightslategray;
 }

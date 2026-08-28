@@ -1,11 +1,6 @@
 
 
 
-const prova = document.querySelector("#prova")
-
-prova.textContent = "PROVA script"
-
-
 const gameboard = (function createGameboard() {
     let gameboard =
         [[" ", " ", " "],
@@ -72,7 +67,7 @@ const gameboard = (function createGameboard() {
         return gameboard.slice()
     }
 
-    const checkMoveValidity = function (move) {
+    const isMoveValid = function (move) {
         const free_arr = getFreeSpaces()
 
         function isSameMove(move1, move2) {
@@ -134,7 +129,7 @@ const gameboard = (function createGameboard() {
 
     return {
         toString, getFreeSpaces, displayMove,
-        checkFull, getLines, checkMoveValidity, getBoard, onChange, resetBoard
+        checkFull, getLines, isMoveValid, getBoard, onChange, resetBoard
     }
 })()
 
@@ -147,14 +142,12 @@ function createPlayer(name) {
 
 
 }
+
 function createTicTacToePlayer(playerName) {
     const { name, sayHi } = createPlayer(playerName)
 
     const decideMove = function (gameboard) {
-        // const move = prompt(`decidi mossa per player ${name} `)
-        // console.log(move)
-        // console.log(typeof (move))
-        // return move
+
 
     }
     return { name, decideMove, sayHi }
@@ -183,6 +176,9 @@ const game =
             winner = "none"
             isWon = false
             displayCreateMessage()
+        }
+        const getCurrentSymbol = function () {
+            return active_player_symbol
         }
         const displayCreateMessage = function () {
             console.log("Gioco creato")
@@ -218,7 +214,7 @@ const game =
                 return
 
             }
-            const isValidMove = gameboard.checkMoveValidity(played_move)
+            const isValidMove = gameboard.isMoveValid(played_move)
 
             //se apposto
             if (!isValidMove) {
@@ -282,7 +278,7 @@ const game =
         displayCreateMessage()
 
 
-        return { playMove, resetGame }
+        return { playMove, resetGame, getCurrentSymbol }
 
     })(gameboard, player_1, player_2)
 
@@ -291,9 +287,9 @@ const game =
 const renderer = (function createRenderer(gameboard, game) {
     let cells = document.querySelectorAll(".game>div")
     let restartButton = document.querySelector(".restart")
+    let originalContent = " "
     const getMoveFromClass = function (cell) {
         const classes = cell.classList
-        console.log(classes)
         let row = 0
         let col = 0
         const row_class = classes[0]
@@ -322,6 +318,7 @@ const renderer = (function createRenderer(gameboard, game) {
         board.forEach((row, index) => {
             for (let i = 0; i < row.length; i += 1) {
                 cells[index * row.length + i].textContent = row[i]
+
             }
 
         })
@@ -330,9 +327,35 @@ const renderer = (function createRenderer(gameboard, game) {
 
 
 
+
     cells.forEach((cell) => cell.addEventListener("click", (event) => {
         const playedMove = getMoveFromClass(cell)
+        originalContent = game.getCurrentSymbol()
         game.playMove(playedMove)
+        cell.classList.remove("text-transparent")
+
+
+
+
+    }))
+
+    cells.forEach((cell) => cell.addEventListener("mouseover", (event) => {
+        const hoveringMove = getMoveFromClass(cell)
+        originalContent = cell.textContent
+        if (gameboard.isMoveValid(hoveringMove)) {
+
+            const currentSymbol = game.getCurrentSymbol()
+            cell.classList.add("text-transparent")
+            cell.textContent = currentSymbol
+
+
+        }
+
+
+    }))
+    cells.forEach((cell) => cell.addEventListener("mouseout", (event) => {
+        cell.textContent = originalContent.slice(0)
+        cell.classList.remove("text-transparent")
 
 
     }))
