@@ -83,3 +83,9 @@ body {
 .restart:hover {
     background-color: lightslategray;
 }
+
+form {
+    display: flex;
+    flex-direction: column;
+    gap: 3vh;
+}

@@ -1,6 +1,7 @@
 
 
 
+
 const gameboard = (function createGameboard() {
     let gameboard =
         [[" ", " ", " "],
@@ -134,66 +135,73 @@ const gameboard = (function createGameboard() {
 })()
 
 function createPlayer(name) {
+    let _name = name
     const sayHi = function () {
-        console.log("Hi!")
+        console.log(`Hi, i'm ${_name} !`)
     }
 
-    return { name, sayHi }
+    const changeName = function (newName) {
+        _name = newName
+
+    }
+
+    return { get name() { return _name; }, sayHi, changeName }
 
 
 }
 
 function createTicTacToePlayer(playerName) {
-    const { name, sayHi } = createPlayer(playerName)
+    const { name, sayHi, changeName } = createPlayer(playerName)
 
     const decideMove = function (gameboard) {
 
 
     }
-    return { name, decideMove, sayHi }
+    return { name, decideMove, sayHi, changeName }
 
 }
 
-player_1 = createTicTacToePlayer("john")
-player_2 = createTicTacToePlayer("andy")
+player_1 = createTicTacToePlayer("player 1")
+player_2 = createTicTacToePlayer("player 2")
 
 const game =
     (function createGame(gameboard, p1, p2) {
 
         const symbols = ["󰄛", ""]
-        let active_player = p1
-        let active_player_symbol = symbols[0]
+        let activePlayer = p1
+        let activePlayerSymbol = symbols[0]
         let winner = "none"
         let isWon = false
+        let isDrawn = false
 
 
 
 
         const resetGame = function () {
             gameboard.resetBoard()
-            active_player = p1
-            active_player_symbol = symbols[0]
+            activePlayer = p1
+            activePlayerSymbol = symbols[0]
             winner = "none"
             isWon = false
             displayCreateMessage()
         }
         const getCurrentSymbol = function () {
-            return active_player_symbol
+            return activePlayerSymbol
         }
         const displayCreateMessage = function () {
             console.log("Gioco creato")
             displayChangeMessage()
         }
         const displayChangeMessage = function () {
-            console.log(`E il turno di ${active_player.name} con simbolo ${active_player_symbol}`)
+            console.log(`E il turno di ${activePlayer.name} con simbolo ${activePlayerSymbol}`)
         }
         const changeActivePlayer = () => {
-            if (active_player === p1) {
-                active_player = p2
-                active_player_symbol = symbols[1]
+            if (activePlayer === p1) {
+                activePlayer = p2
+                activePlayerSymbol = symbols[1]
             } else {
-                active_player = p1
-                active_player_symbol = symbols[0]
+                activePlayer = p1
+                activePlayerSymbol = symbols[0]
             }
 
             displayChangeMessage()
@@ -221,7 +229,7 @@ const game =
                 console.log("Mossa non valida, riprova")
                 return
             }
-            gameboard.displayMove(played_move, active_player_symbol)
+            gameboard.displayMove(played_move, activePlayerSymbol)
             console.log(`gameboard dopo mossa: ${gameboard.toString()}`)
             const isGameDone = checkGameEnding()
             if (!isGameDone) {
@@ -256,12 +264,12 @@ const game =
 
         const checkGameEnding = function () {
             const isFull = gameboard.checkFull()
-            const hasWon = checkWin(active_player_symbol)
+            const hasWon = checkWin(activePlayerSymbol)
             let isGameDone = false
 
             if (hasWon) {
                 isWon = true
-                winner = active_player
+                winner = activePlayer
                 console.log(`Winner ${winner}`)
                 isGameDone = true
 
@@ -269,16 +277,28 @@ const game =
             } else if (isFull) {
                 console.log("Parita")
                 isGameDone = true
+                isDrawn = true
             }
             return isGameDone
 
         }
+        const getPlayers = function () {
+            return [p1, p2]
+        }
+        const getActivePlayer = function () {
+            return activePlayer
+        }
+
+
 
 
         displayCreateMessage()
 
 
-        return { playMove, resetGame, getCurrentSymbol }
+        return {
+            playMove, resetGame, getCurrentSymbol, getPlayers, getActivePlayer,
+            get isWon() { return isWon }, get winner() { return winner }, get isDrawn() { return isDrawn }
+        }
 
     })(gameboard, player_1, player_2)
 
@@ -287,6 +307,9 @@ const game =
 const renderer = (function createRenderer(gameboard, game) {
     let cells = document.querySelectorAll(".game>div")
     let restartButton = document.querySelector(".restart")
+    const formNames = document.querySelector(".names")
+    const saveNamesButton = document.querySelector(".names>button[type='submit']")
+    const gameText = document.querySelector(".game-text")
     let originalContent = " "
     const getMoveFromClass = function (cell) {
         const classes = cell.classList
@@ -312,6 +335,23 @@ const renderer = (function createRenderer(gameboard, game) {
         console.log(`Mossa e ${row} ${col}`)
         return { "row": row, "col": col }
     }
+    const saveNames = function () {
+        const p1Name = formNames.player1Name.value
+        const p2Name = formNames.player2Name.value
+        const players = game.getPlayers()
+        players[0].changeName(p1Name)
+        players[1].changeName(p2Name)
+        players.forEach((p) => p.sayHi())
+
+    }
+
+    saveNamesButton.addEventListener("click", (event) => {
+        event.preventDefault()
+        saveNames()
+    })
+
+
+
 
     gameboard.onChange(() => {
         const board = gameboard.getBoard()
@@ -332,8 +372,16 @@ const renderer = (function createRenderer(gameboard, game) {
         const playedMove = getMoveFromClass(cell)
         originalContent = game.getCurrentSymbol()
         game.playMove(playedMove)
-        cell.classList.remove("text-transparent")
+        if (!game.isWon) {
+            cell.classList.remove("text-transparent")
+            gameText.textContent = `It's the turn of ${game.getActivePlayer().name} (${game.getCurrentSymbol()})`
 
+
+        } else if (!game.isDrawn) {
+            gameText.textContent = `Game won. Congrats ${game.winner.name}`
+        } else {
+            gameText.textContent = `Draw. Good game 󰊗`
+        }
 
 
 
