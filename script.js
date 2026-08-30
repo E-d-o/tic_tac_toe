@@ -219,15 +219,15 @@ const game =
             if (isWon) {
 
                 displayEndingMessage()
-                return
+                return false
 
             }
             const isValidMove = gameboard.isMoveValid(played_move)
 
-            //se apposto
+
             if (!isValidMove) {
                 console.log("Mossa non valida, riprova")
-                return
+                return false
             }
             gameboard.displayMove(played_move, activePlayerSymbol)
             console.log(`gameboard dopo mossa: ${gameboard.toString()}`)
@@ -240,6 +240,7 @@ const game =
                 displayEndingMessage()
 
             }
+            return true
 
         }
 
@@ -370,14 +371,21 @@ const renderer = (function createRenderer(gameboard, game) {
 
     cells.forEach((cell) => cell.addEventListener("click", (event) => {
         const playedMove = getMoveFromClass(cell)
-        originalContent = game.getCurrentSymbol()
-        game.playMove(playedMove)
-        if (!game.isWon) {
+        const moveSymbol = game.getCurrentSymbol()
+
+        if (game.playMove(playedMove)) {
+            originalContent = moveSymbol
             cell.classList.remove("text-transparent")
+
+        }
+
+        if (!game.isWon) {
+
             gameText.textContent = `It's the turn of ${game.getActivePlayer().name} (${game.getCurrentSymbol()})`
 
 
-        } else if (!game.isDrawn) {
+        }
+        else if (!game.isDrawn) {
             gameText.textContent = `Game won. Congrats ${game.winner.name}`
         } else {
             gameText.textContent = `Draw. Good game 󰊗`
@@ -389,9 +397,10 @@ const renderer = (function createRenderer(gameboard, game) {
 
     cells.forEach((cell) => cell.addEventListener("mouseover", (event) => {
         const hoveringMove = getMoveFromClass(cell)
-        originalContent = cell.textContent
+
         if (gameboard.isMoveValid(hoveringMove)) {
 
+            originalContent = cell.textContent
             const currentSymbol = game.getCurrentSymbol()
             cell.classList.add("text-transparent")
             cell.textContent = currentSymbol
@@ -402,8 +411,12 @@ const renderer = (function createRenderer(gameboard, game) {
 
     }))
     cells.forEach((cell) => cell.addEventListener("mouseout", (event) => {
-        cell.textContent = originalContent.slice(0)
-        cell.classList.remove("text-transparent")
+        const hoveringMove = getMoveFromClass(cell)
+
+        if (gameboard.isMoveValid(hoveringMove)) {
+            cell.textContent = originalContent
+            cell.classList.remove("text-transparent")
+        }
 
 
     }))
