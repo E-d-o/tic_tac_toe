@@ -151,13 +151,13 @@ function createPlayer(name) {
 }
 
 function createTicTacToePlayer(playerName) {
-    const { name, sayHi, changeName } = createPlayer(playerName)
+    const player = createPlayer(playerName)
 
     const decideMove = function (gameboard) {
 
 
     }
-    return { name, decideMove, sayHi, changeName }
+    return { get name() { return player.name }, decideMove, sayHi: player.sayHi, changeName: player.changeName }
 
 }
 
