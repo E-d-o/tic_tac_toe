@@ -183,6 +183,7 @@ const game =
             activePlayerSymbol = symbols[0]
             winner = "none"
             isWon = false
+            isDrawn = false
             displayCreateMessage()
         }
         const getCurrentSymbol = function () {
@@ -290,6 +291,9 @@ const game =
             return activePlayer
         }
 
+        const isEnded = function () {
+            return isWon || isDrawn
+        }
 
 
 
@@ -298,7 +302,7 @@ const game =
 
         return {
             playMove, resetGame, getCurrentSymbol, getPlayers, getActivePlayer,
-            get isWon() { return isWon }, get winner() { return winner }, get isDrawn() { return isDrawn }
+            get isWon() { return isWon }, get winner() { return winner }, get isDrawn() { return isDrawn }, isEnded
         }
 
     })(gameboard, player_1, player_2)
@@ -379,16 +383,18 @@ const renderer = (function createRenderer(gameboard, game) {
 
         }
 
-        if (!game.isWon) {
+        if (game.isWon) {
 
-            gameText.textContent = `It's the turn of ${game.getActivePlayer().name} (${game.getCurrentSymbol()})`
+            gameText.textContent = `Game won. Congrats ${game.winner.name}`
+
 
 
         }
-        else if (!game.isDrawn) {
-            gameText.textContent = `Game won. Congrats ${game.winner.name}`
-        } else {
+        else if (game.isDrawn) {
             gameText.textContent = `Draw. Good game 󰊗`
+        } else {
+
+            gameText.textContent = `It's the turn of ${game.getActivePlayer().name} (${game.getCurrentSymbol()})`
         }
 
 
@@ -398,7 +404,7 @@ const renderer = (function createRenderer(gameboard, game) {
     cells.forEach((cell) => cell.addEventListener("mouseover", (event) => {
         const hoveringMove = getMoveFromClass(cell)
 
-        if (gameboard.isMoveValid(hoveringMove)) {
+        if (gameboard.isMoveValid(hoveringMove) && !game.isEnded()) {
 
             originalContent = cell.textContent
             const currentSymbol = game.getCurrentSymbol()
@@ -413,7 +419,7 @@ const renderer = (function createRenderer(gameboard, game) {
     cells.forEach((cell) => cell.addEventListener("mouseout", (event) => {
         const hoveringMove = getMoveFromClass(cell)
 
-        if (gameboard.isMoveValid(hoveringMove)) {
+        if (gameboard.isMoveValid(hoveringMove) && !game.isEnded()) {
             cell.textContent = originalContent
             cell.classList.remove("text-transparent")
         }
@@ -423,7 +429,9 @@ const renderer = (function createRenderer(gameboard, game) {
 
     restartButton.addEventListener("click", (event) => {
         game.resetGame()
+        gameText.textContent = `It's the turn of ${game.getActivePlayer().name} (${game.getCurrentSymbol()})`
     })
+
 
 
 })(gameboard, game)
